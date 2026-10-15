@@ -1,0 +1,105 @@
+#include <Wire.h>
+#include <Arduino_MPU6050.h>
+#include <SoftwareSerial.h>
+MPU6050 mpu;
+SoftwareSerial BT(2, 3); // RX, TX
+// Flex sensor pins
+#define adc1 A0 #define
+adc2 A1 #define adc3
+A2 #define adc4 A3
+// Language switch pin
+#define langSwitch 7
+int flex1 = 0, flex2 = 0, flex3 = 0, flex4 = 0;
+void setup()
+{
+pinMode (langSwitch, INPUT_PULLUP); // HIGH = Telugu, LOW = English
+Serial.begin(9600);
+BT.begin(9600);
+Wire.begin();
+27
+Void loop()
+{ // Read flex
+sensor values flex1 =
+analogRead(adc1); flex2
+= analogRead(adc2);
+flex3 =
+analogRead(adc3); flex4
+= analogRead(adc4);
+delay(10);
+// Update MPU6050 data
+mpu.update();
+float normX = mpu.getAccelerationX();
+float normY = mpu.getAccelerationY();
+float normZ = mpu.getAccelerationZ();
+delay(200);
+String message = "";
+// -------- Gesture Logic -------if
+((flex2 > 950) && (flex1 > 940))
+{ if (normX > 5)
+message = "YES";
+else if (normX < -3) message = "NO";
+else if (normY > 3) message = "OK";
+else if (normY < -3) message = "BYE";
+} else if
+(flex1 > 950)
+{ if (normX > 5)
+message = "THANK YOU"; else if (normX < -5) message =
+"NICE TO MEET YOU"; else if (normY > 5) message =
+"GLAD TO BE HERE"; else if (normY < -5) message =
+"HELLO — this is my project"; } else if (flex2 <
+950)
+28
+{
+if (normX > 5) message = "WATER";
+else if (normX < -5) message = "WHAT IS YOUR NAME"; else
+if (normY > 5) message = "SORRY";
+else if (normY < -5) message = "FINE";
+}
+else
+{
+if (normX > 5) message = "HELP";
+else if (normX < -5) message = "WASHROOM";
+else if (normY > 5) message = "MEDICINE";
+else if (normY < -5) message = "FOOD";
+}
+// ------ Language Selection ------
+int lang = digitalRead(langSwitch); // HIGH = Telugu, LOW = English
+String output = "";
+if (message != "")
+{ if (lang
+== LOW)
+{
+// ----- English ----output
+= message;
+}
+else
+{
+// ----- Telugu Translations ----- if
+(message == "YES") output = "అవు";
+else if (message == "NO") output =
+"కా"; else if
+(message == "OK") output = "సర"; else if
+(message == "BYE") output = "వీడ్";
+29
+else if (message == "THANK YOU") output = "ధన్య వ్"; else if
+(message == "NICE TO MEET YOU") output = "మిమ్మ కలవడం ఆన్ందం";
+else if (message == "GLAD TO BE HERE") output =
+"ఇకడడ ఉండటం
+ఎంత సంతం";
+else if (message == "HELLO — this is my project") output = "హల — ఇద న్
+ప్రా";జ
+else if (message == "WATER") output = "నీళ";
+else if (message == "WHAT IS YOUR NAME") output = "మ్ పే ఏమి"; else if
+(message == "SORRY") output = "కమ్ంమ్ంం"; else if (message ==
+"FINE") output = "బాన్మ మ్ ";
+else if (message == "HELP") output = "సహం చంం"; else if
+(message == "WASHROOM") output = "బపతమ్"; else if
+(message == "MEDICINE") output = "ఔోధం"; else if
+(message == "FOOD") output = "ఆహం";
+}
+// Send final output
+Serial.println(output);
+BT.println(output);
+}
+delay(300);
+}
